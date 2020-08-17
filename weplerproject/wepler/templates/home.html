@@ -1,0 +1,17 @@
+<a href="{% url 'plus_signup' %}">plus 회원가입</a>
+<br><br><br><br>
+<a href="{% url 'plz_signup' %}">plz 회원가입</a>
+
+{% for plus in plus_user.all %}
+    <div class="container">
+        <h1>Plus</h1>
+        <p>{{ plus.plus_id }}</p>
+    </div>
+{% endfor %}
+
+{% for plz in plz_user.all %}
+    <div class="container">
+        <h1>Plz</h1>
+        <p>{{ plz.plz_id }}</p>
+    </div>
+{% endfor %}

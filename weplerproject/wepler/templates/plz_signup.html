@@ -1,0 +1,14 @@
+<div class='container'>
+    <form method='POST'>
+        {% csrf_token %}
+        <div class = "container">
+            {{form.plz_id.label_tag}}
+            {{form.plz_id}}
+            <br><br><br>
+            {{form.plz_password.label_tag}}
+            {{form.password}}
+            <br><br><br>
+        </div>
+        <input class="btn btn-dark" type="submit" value="가입하기">
+    </form>
+</div>
