@@ -1,13 +1,10 @@
 from django import forms
-from .models import Plz, Plus, Plus_team, Match, Plus_review, Plz_review, Hire_board 
-
+from .models import *
 class PlusForm(forms.ModelForm):
-    start_date = forms.DateTimeField(
-        label='Start',
+    plus_start_date = forms.DateField(
         widget=forms.widgets.DateInput(attrs={'type':'date'}),
     )
-    end_date = forms.DateTimeField(
-        label='End',
+    plus_end_date = forms.DateField(
         widget=forms.widgets.DateInput(attrs={'type':'date'})
     )
     password = forms.CharField(
@@ -36,11 +33,11 @@ class Plus_teamForm(forms.ModelForm):
         fields = '__all__'
 
 class Plus_reviewForm(forms.ModelForm):
-    start_date = forms.DateTimeField(
+    plus_start_date = forms.DateTimeField(
         label='Start',
         widget=forms.widgets.DateInput(attrs={'type':'date'}),
     )
-    end_date = forms.DateTimeField(
+    plus_end_date = forms.DateTimeField(
         label='End',
         widget=forms.widgets.DateInput(attrs={'type':'date'})
     )

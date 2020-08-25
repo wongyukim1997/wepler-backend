@@ -1,0 +1,19 @@
+<div class='container'>
+    <form method='POST' action="{% url 'plz_login'%}">
+        {% csrf_token %}
+        <div class = "container">
+            <h1>Login</h1>
+            <form>
+                Id(email):
+                <br>
+                <input name="id" type="email" value="">
+                <br>
+                Password:
+                <br>
+                <input name="password1" type="password" value="">
+                <br>
+                <input class="btn btn-primary" type="submit" value="Login">
+                <br>
+        </div>
+    </form>
+</div>

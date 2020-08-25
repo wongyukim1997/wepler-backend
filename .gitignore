@@ -12,3 +12,4 @@ db.sqlite3-journal
 media
 mysqlclient-1.4.6-cp38-cp38-win32.whl
 venv
+myvenv
