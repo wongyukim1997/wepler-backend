@@ -1,88 +1,47 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponse
-from .models import Plus, Plz, Plus_class, Plus_day
-from .form import PlusForm, PlzForm
+from .models import *
+from .serializers import *
+from rest_framework import viewsets, status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 import json
 import bcrypt                            # 암호화에 사용
 import jwt                             # 토큰 발행에 사용
 
-def home(request):
-    plus_user = Plus.objects
-    plz_user = Plz.objects
-    return render(request, 'home.html', {'plz_user': plz_user, 'plus_user' : plus_user})
+class Plus_signupView(APIView):
+    def post(self, request):
+        serializer = PlusSerializer(data = request.data)
+        if serializer.is_valid():
+            password = serializer.data['plus_password'].encode('utf-8')
+            password_crypt = bcrypt.hashpw(password, bcrypt.gensalt())  # 암호화된 비밀번호 생성
+            password_crypt = password_crypt.decode('utf-8')             # DB에 저장할 수 있는 유니코드 문자열 형태로 디코딩
+            Plus.objects.create(
+                plus_id= serializer.data['plus_id'],
+                plus_name= serializer.data['plus_name'],
+                plus_password = password_crypt,
+                plus_address = serializer.data['plus_address'],
+                plus_edu = False;
+                Plus_has_team =False;
+            )
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
 
-def plus_signup(request):
-    if request.method =='POST':
-        name = request.POST['username']
-        user_id = request.POST['id']
-        password = request.POST['password1'].encode('utf-8')                 # 입력된 패스워드를 바이트 형태로 인코딩
-        address = request.POST['address']
-        user_job = request.POST.get('job_check', '')
-
-        user_class = request.POST.getlist('class_check', '')
-        user_day = request.POST.getlist('day_check', '')
-
-        password_crypt = bcrypt.hashpw(password, bcrypt.gensalt())  # 암호화된 비밀번호 생성
-        password_crypt = password_crypt.decode('utf-8')             # DB에 저장할 수 있는 유니코드 문자열 형태로 디코딩
-
-        p_user = Plus.objects.create(
-            plus_id = user_id,
-            plus_name = name,
-            plus_password = password_crypt,
-            plus_address = address,
-            plus_job = user_job,
-            plus_edu = False,
-            plus_has_team= False,
-        )
-
-        for i in range(len(user_class)):
-            Plus_class(
-                plus_user = p_user,
-                class_name = user_class[i],
-            ).save()
-        
-        for j in range(len(user_day)):
-            Plus_day(
-                plus_user = p_user,
-                day = user_day[j],
-            ).save()
-            
-        return HttpResponse(status=200)
-    else:
-        return render(request, 'plus_signup.html')
-
-def plz_signup(request):
-    if request.method =='POST':
-        name = request.POST['username']
-        user_id = request.POST['id']
-        password = request.POST['password1'].encode('utf-8')                 # 입력된 패스워드를 바이트 형태로 인코딩
-        address = request.POST['address']
-        user_class = request.POST.getlist('class_check', '')
-        if request.POST.get('group_check', '') == 'on':
-            user_group = True
-        else:
-            user_group = False        
-
-        password_crypt = bcrypt.hashpw(password, bcrypt.gensalt())  # 암호화된 비밀번호 생성
-        password_crypt = password_crypt.decode('utf-8')             # DB에 저장할 수 있는 유니코드 문자열 형태로 디코딩
-
-        p_user = Plz.objects.create(
-            plz_id = user_id,
-            plz_name = name,
-            plz_password = password_crypt,
-            plz_address = address,
-            plz_group = user_group,
-        )
-
-        for i in range(len(user_class)):
-            Plz_class(
-                plz_user = p_user,
-                class_name = user_class[i],
-            ).save()
-            
-        return HttpResponse(status=200)
-    else:
-        return render(request, 'plz_signup.html')
+class Plz_signupView(APIView):
+    def post(self, request):
+        serializer = PlzSerializer(data = request.data)
+        if serializer.is_valid():
+            password = serializer.data['plus_password'].encode('utf-8')
+            password_crypt = bcrypt.hashpw(password, bcrypt.gensalt())  # 암호화된 비밀번호 생성
+            password_crypt = password_crypt.decode('utf-8')             # DB에 저장할 수 있는 유니코드 문자열 형태로 디코딩
+            Plz.objects.create(
+                plz_id= serializer.data['plus_id'],
+                plz_name= serializer.data['plus_name'],
+                plz_password = password_crypt,
+                plz_address = serializer.data['plus_address'],
+            )
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
 
 def plus_login(request):
     SECRET_KEY = '아무튼비밀임'
