@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'wepler.apps.WeplerConfig',
+    'board.apps.BoardConfig',
     'rest_framework',
 ]
 MIDDLEWARE = [
@@ -77,7 +78,7 @@ WSGI_APPLICATION = 'weplerproject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'sp10',
+        'NAME': 'wp2',
         'USER': 'root',
         'PASSWORD': '123123',
         'HOST': 'localhost',

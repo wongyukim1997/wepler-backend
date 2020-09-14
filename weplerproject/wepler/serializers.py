@@ -20,3 +20,8 @@ class Plz_classSerializer(serializers.ModelSerializer):
     class Meta:
         model = Plz_class
         fields = '__all__'
+
+class Test_boardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Test_board
+        fields = '__all__'
