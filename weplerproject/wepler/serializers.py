@@ -5,23 +5,33 @@ class PlusSerializer(serializers.ModelSerializer):
     class Meta:
         model = Plus
         fields = '__all__'
-
-class Plus_classSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Plus_class
-        fields = '__all__'
     
 class PlzSerializer(serializers.ModelSerializer):
     class Meta:
         model = Plz
         fields = '__all__'
 
-class Plz_classSerializer(serializers.ModelSerializer):
+class Hire_boardSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Plz_class
+        model = Hire_board
         fields = '__all__'
 
-class Test_boardSerializer(serializers.ModelSerializer):
+class Plus_ApplySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Test_board
+        model = Plus_apply
+        fields = '__all__'
+
+class MatchSerializer(serializers.ModelSerializer):
+    class Meta:
+        models = Match
+        fields = '__all__'
+
+class Plus_reviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        models = Plus_review
+        fields = '__all__'
+
+class Plz_reviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        models = Plz_review
         fields = '__all__'

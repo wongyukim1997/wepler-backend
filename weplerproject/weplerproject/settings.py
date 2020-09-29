@@ -78,7 +78,7 @@ WSGI_APPLICATION = 'weplerproject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'wp2',
+        'NAME': 'wp7',
         'USER': 'root',
         'PASSWORD': '123123',
         'HOST': 'localhost',

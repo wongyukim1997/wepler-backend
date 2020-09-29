@@ -3,6 +3,7 @@ from django.urls import path, include
 import wepler.views
 import board.views
 import mypage.views
+import review.views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -11,5 +12,6 @@ urlpatterns = [
     path('login/', wepler.views.login),
     path('token_check/', wepler.views.tokenCheck),
     path('board/', include('board.url')),
-    path('mypage/', include('mypage.url'))
+    path('mypage/', include('mypage.url')),
+    path('review/', include('review.url')),
 ]

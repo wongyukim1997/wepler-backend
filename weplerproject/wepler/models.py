@@ -28,7 +28,7 @@ class Plz(models.Model):
     plz_group = models.CharField(verbose_name='개인/단체', max_length=50)
     plz_phonenumber = models.CharField(verbose_name='전화번호', max_length=15)
     plz_address_big = models.CharField(verbose_name='행정구역', max_length=10)
-    plz_when_learn = models.CharField(verbose_name='희망 기간', max_length=30)
+    plz_when_learn = models.CharField(verbose_name='희망 기간', max_length=50)
 
 class Plz_class(models.Model):
     plz_user = models.ForeignKey(Plz, on_delete=models.CASCADE)
@@ -49,23 +49,43 @@ class Hire_board(models.Model):
     recruit = models.DateField(verbose_name='마감일')
     need_member = models.IntegerField(verbose_name='필요인원')
     apply_member = models.IntegerField(verbose_name='신청인원')
+    timeover = models.CharField(verbose_name='모집여부', max_length=10)
+    plz_group = models.CharField(verbose_name='개인/단체', max_length=50)
+
+#plz가 plus의 게시글을 보고 선택하기 위한 table
+class Choice_board(models.Model):       #이부분이 예빈이가 할 곳이다 여기는 아마도 GET 방식으로 보내야 할 데이터들이다
+    plus_user = models.ForeignKey(Plus, on_delete=models.CASCADE)
+    plus_class = models.CharField(verbose_name='분야', max_length=50)
+    plus_day = models.CharField(verbose_name='요일', max_length=50)
+    plus_start_time = models.TimeField(verbose_name='시작 시간')
+    plus_end_time = models.TimeField(verbose_name='끝 시간')
+    plus_name = models.CharField(verbose_name='이름', max_length=10)
+    plus_info = models.TextField(verbose_name='자기소개글')
+    plus_point = models.FloatField(verbose_name='점수')
 
 class Match(models.Model):
     plus_user = models.ForeignKey(Plus, on_delete=models.CASCADE)
     plz_user = models.ForeignKey(Plz, on_delete=models.CASCADE)
-    match_subject = models.CharField(verbose_name='주제', max_length=20)
+    match_subject =models.CharField(verbose_name='주제', max_length=20)
     complete = models.BooleanField(verbose_name='완료/진행')
-
+#plz가 plus를 리뷰한것
 class Plus_review(models.Model):
     plus_user = models.ForeignKey(Plus, on_delete=models.CASCADE)
     plz_user = models.ForeignKey(Plz, on_delete=models.CASCADE)
+    plus_name = models.CharField(verbose_name='이름', max_length=10)
+    plz_name = models.CharField(verbose_name='이름', max_length=10)
+    plus_class = models.CharField(verbose_name='분야', max_length=50)
     date = models.DateTimeField(verbose_name='입력 날짜')
     title = models.CharField(max_length=20, verbose_name='제목')
     content = models.TextField(verbose_name='내용')
-
+    plus_point = models.FloatField(verbose_name='점수')
+#plus가 plz를 리뷰한것
 class Plz_review(models.Model):
     plus_user = models.ForeignKey(Plus, on_delete=models.CASCADE)
     plz_user = models.ForeignKey(Plz, on_delete=models.CASCADE)
+    plz_class = models.CharField(verbose_name='분야', max_length=50)
+    plus_name = models.CharField(verbose_name='이름', max_length=10)
+    plz_name = models.CharField(verbose_name='이름', max_length=10)
     date = models.DateTimeField(verbose_name='입력 날짜')
     title = models.CharField(max_length=20, verbose_name='제목')
     content = models.TextField(verbose_name='내용')
@@ -77,18 +97,20 @@ class Plus_date(models.Model):
 class Plus_apply(models.Model):
     plz_user = models.ForeignKey(Plz, on_delete=models.CASCADE)
     plus_user = models.ForeignKey(Plus, on_delete=models.CASCADE)
+    plus_user_name = models.CharField(verbose_name='이름', max_length=10)
+    title = models.CharField(verbose_name='주제', max_length=30)
+    plus_address = models.CharField(verbose_name='활동분야(결국 사는곳)', max_length=10)
+    plz_class = models.CharField(verbose_name='분야', max_length=50)
     plus_class = models.CharField(verbose_name='분야', max_length=50)
-    plus_date = models.ForeignKey(Plus_date, on_delete=models.CASCADE)
+    plus_date = models.CharField(verbose_name='요일', max_length=10)
+    hire_id = models.ForeignKey(Hire_board, on_delete=models.CASCADE)
+    plus_point = models.FloatField(verbose_name='점수')
 
-class Test_board(models.Model):
-    title = models.CharField(verbose_name='제목', max_length=50)
-    recruit = models.DateField(verbose_name='모집 기간')
-    need_member = models.IntegerField(verbose_name='모집 인원')
-    start_date = models.DateField(verbose_name='시작시간')
-    end_date = models.DateField(verbose_name='끝시간')
-    content = models.TextField(verbose_name='내용')
-
-class Test_fields(models.Model):
-    test_board = models.ForeignKey(Test_board, on_delete=models.CASCADE)
-    fields = models.CharField(verbose_name='분야', max_length=30)
-
+#plz가 신청하는 경우
+class Plz_apply(models.Model):
+    plz_user = models.ForeignKey(Plz, on_delete=models.CASCADE)
+    plus_user = models.ForeignKey(Plus, on_delete=models.CASCADE)
+    plz_user_name = models.CharField(verbose_name='이름', max_length=10)
+    plz_address = models.CharField(verbose_name='활동분야(결국 사는곳)', max_length=10)
+    plz_class = models.CharField(verbose_name='분야', max_length=50)
+    choice_id = models.ForeignKey(Hire_board, on_delete=models.CASCADE)

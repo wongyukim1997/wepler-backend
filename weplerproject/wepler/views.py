@@ -32,6 +32,7 @@ def plus_signup(request):
             plus_start_time = data['plus_start_time'],
             plus_end_time = data['plus_end_time'],
             plus_continu_month = data['plus_continu_month'],
+            plus_point = 0,
         )
 
         for i in range(len(user_class)):
@@ -53,7 +54,7 @@ def plus_signup(request):
 def plz_signup(request):
     if request.method =='POST':
         data = json.loads(request.body)
-        password = data['plz_phonenumber'].encode('utf-8')             # 입력된 패스워드를 바이트 형태로 인코딩
+        password = data['plz_password'].encode('utf-8')             # 입력된 패스워드를 바이트 형태로 인코딩
         password_crypt = bcrypt.hashpw(password, bcrypt.gensalt())  # 암호화된 비밀번호 생성
         password_crypt = password_crypt.decode('utf-8')             # DB에 저장할 수 있는 유니코드 문자열 형태로 디코딩
         user_class = data['plz_fields']
@@ -65,7 +66,7 @@ def plz_signup(request):
         elif data['plz_when_learn'] == {'regularly': True}: user_when = 'regularly'
         else: user_when = 'thinking'
             
-        print(data['plz_belong']) 
+        print(data['plz_phonenumber']) 
         p_user = Plz.objects.create(
             plz_id = data['plz_email'],
             plz_name = data['plz_name'],
@@ -96,7 +97,7 @@ def login(request):
             u_id = "plz"
             user = Plz.objects.get(plz_id = user_id)                                                            #입력된 id가 존재하면, 그 id를 가진 plz를 user라는 변수에 넣었음
             if bcrypt.checkpw(user_password, user.plz_password.encode('utf-8')) :                                 #입력된 비밀번호와 변수 user(입력된 id를 가진 plz)의 비밀번호를 비교
-                token = jwt.encode({'plz_id' : user.plz_id}, SECRET_KEY, algorithm = "HS256").decode('utf-8')   # 유니코드 문자열로 디코딩                                                                      
+                token = jwt.encode({'user_id' : user.plz_id}, SECRET_KEY, algorithm = "HS256").decode('utf-8')   # 유니코드 문자열로 디코딩                                                                      
                 return JsonResponse({"token" : token, "user_id" : u_id }, status=200)
             else:
                 return HttpResponse(status=401)
@@ -104,7 +105,7 @@ def login(request):
             u_id = "plus"
             user = Plus.objects.get(plus_id = user_id)                                                            #입력된 id가 존재하면, 그 id를 가진 plz를 user라는 변수에 넣었음
             if bcrypt.checkpw(user_password, user.plus_password.encode('utf-8')) :                                 #입력된 비밀번호와 변수 user(입력된 id를 가진 plz)의 비밀번호를 비교
-                token = jwt.encode({'plus_id' : user.plus_id}, SECRET_KEY, algorithm = "HS256")
+                token = jwt.encode({'user_id' : user.plus_id}, SECRET_KEY, algorithm = "HS256")
                 token = token.decode('utf-8')                                                                           # 유니코드 문자열로 디코딩
                 return JsonResponse({"token" : token, "user_id" : u_id }, status=200)
             else:
@@ -118,13 +119,11 @@ def tokenCheck(request):
     SECRET_KEY = '아무튼비밀임'
     if request.method == 'GET':
         token = request.headers.get('Authorization', None)
-        print(token)
         user_token_info = jwt.decode(token, SECRET_KEY, algorithm = "HS256")
-        print(user_token_info)
-        if Plus.objects.filter(plus_id=user_token_info['plus_id']).exists() :
-            return HttpResponse(status=200)
-        elif Plz.objects.filter(plz_id=user_token_info['plz_id']).exists() :
-            return HttpResponse(status=200)
+        if Plus.objects.filter(plus_id=user_token_info['user_id']).exists() :
+            return JsonResponse({"user_email" : user_token_info['user_id']}, status=200)
+        elif Plz.objects.filter(plz_id=user_token_info['user_id']).exists() :
+            return JsonResponse({"user_email" : user_token_info['user_id']}, status=200)
         return HttpResponse(status=403)
     else:
         HttpResponse(status=400)
