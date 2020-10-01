@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 import json
 import bcrypt                          # 암호화에 사용
 import jwt                             # 토큰 발행에 사용
-
+import re
 
 @csrf_exempt
 def plus_signup(request):
@@ -52,39 +52,49 @@ def plus_signup(request):
 
 @csrf_exempt
 def plz_signup(request):
+    special = "!@#$%&_="
     if request.method =='POST':
         data = json.loads(request.body)
-        password = data['plz_password'].encode('utf-8')             # 입력된 패스워드를 바이트 형태로 인코딩
-        password_crypt = bcrypt.hashpw(password, bcrypt.gensalt())  # 암호화된 비밀번호 생성
-        password_crypt = password_crypt.decode('utf-8')             # DB에 저장할 수 있는 유니코드 문자열 형태로 디코딩
-        user_class = data['plz_fields']
+        if re.search(r'\d', data['plz_password']):
+            if re.search(r'\D', data['plz_password']):
+                if any(s in special for s in data['plz_password']):
+                    password = data['plz_password'].encode('utf-8')             # 입력된 패스워드를 바이트 형태로 인코딩
+                    password_crypt = bcrypt.hashpw(password, bcrypt.gensalt())  # 암호화된 비밀번호 생성
+                    password_crypt = password_crypt.decode('utf-8')             # DB에 저장할 수 있는 유니코드 문자열 형태로 디코딩
+                    user_class = data['plz_fields']
 
-        if data['plz_belong'] == {'individual': True}: user_belong = 'individual'
-        else: user_belong = 'group'
-        
-        if data['plz_when_learn'] == {'specific': True}: user_when = 'specific'
-        elif data['plz_when_learn'] == {'regularly': True}: user_when = 'regularly'
-        else: user_when = 'thinking'
-            
-        print(data['plz_phonenumber']) 
-        p_user = Plz.objects.create(
-            plz_id = data['plz_email'],
-            plz_name = data['plz_name'],
-            plz_password = password_crypt,
-            plz_address_big = data['plz_address_big'],
-            plz_address_small = data['plz_address_small'],
-            plz_when_learn = data['plz_when_learn'],
-            plz_phonenumber = data['plz_phonenumber'],
-            plz_group = user_belong,
-        )
-        for i in range(len(user_class)):
-            Plz_class(
-                plz_user = p_user,
-                class_name = user_class[i],
-            ).save()
-        return HttpResponse(status=200)
+                    if data['plz_belong'] == {'individual': True}: user_belong = 'individual'
+                    else: user_belong = 'group'
+                    
+                    if data['plz_when_learn'] == {'specific': True}: user_when = 'specific'
+                    elif data['plz_when_learn'] == {'regularly': True}: user_when = 'regularly'
+                    else: user_when = 'thinking'
+                        
+                    print(data['plz_phonenumber']) 
+                    p_user = Plz.objects.create(
+                        plz_id = data['plz_email'],
+                        plz_name = data['plz_name'],
+                        plz_password = password_crypt,
+                        plz_address_big = data['plz_address_big'],
+                        plz_address_small = data['plz_address_small'],
+                        plz_when_learn = data['plz_when_learn'],
+                        plz_phonenumber = data['plz_phonenumber'],
+                        plz_group = user_belong,
+                    )
+                    for i in range(len(user_class)):
+                        Plz_class(
+                            plz_user = p_user,
+                            class_name = user_class[i],
+                        ).save()
+                    return JsonResponse({"hasnumber" : True, "hascharacter" : True, "hasspecial" : True}, status=200)
+                else:
+                    return JsonResponse({"hasnumber" : True, "hascharacter" : True, "hasspecial" : False}, status=200)
+            else:
+                return JsonResponse({"hasnumber" : True, "hascharacter" : False}, status=200)
+        else:
+            return JsonResponse({"hasnumber" : False}, status=200)
     else:
-        return HttpResponse(status=400)
+            return HttpResponse(status=400)
 
 @csrf_exempt
 def login(request):
@@ -114,6 +124,15 @@ def login(request):
             return HttpResponse(status=400)
     else:
         return HttpResponse(status=400)
+
+def id_check(request):
+    if request.method == 'GET':
+        data = json.loads(request.body)
+        user_id = data['email']
+        if Plus.objects.filter(plus_id=user_id).exists or Plz.objects.filter(plz_id=user_id).exists:
+            return JsonResponse({"isoverap" : True}, status=200)
+        else: JsonResponse({"isoverap" : False}, status=200)
+    else: HttpResponse(status=400)
 
 def tokenCheck(request):
     SECRET_KEY = '아무튼비밀임'

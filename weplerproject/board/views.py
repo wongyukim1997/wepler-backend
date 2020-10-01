@@ -73,6 +73,12 @@ def hire_board(request):                    # 받을 때 field 값은 그냥 plz
         else: return HttpResponse(status=401)
     else: return HttpResponse(status=401)
 
+def list_count(request):
+    if request.method == 'GET':
+        h_count = Hire_board.objects.all().count()
+        return JsonResponse({"count" : h_count}, status=200)
+    else: return HttpResponse(status=400)
+
 @csrf_exempt
 def apply(request, board_id):
     if request.method == 'POST':
@@ -158,6 +164,7 @@ def hire_update(request, board_id):
 
 def Hire_board_detail(request, board_id):
     if request.method == 'GET':
+        read_id = tokenCheck(request)
         print(board_id)
         h_board = Hire_board.objects.filter(id = board_id)[0]
         board_title = h_board.title
@@ -172,7 +179,7 @@ def Hire_board_detail(request, board_id):
         user_name = plz_user.plz_name
         user_group = plz_user.plz_group
         user_class = h_board.plz_class
-        return JsonResponse({"title" : board_title, "content" : board_content, "recruit" : board_recruit, "need_member" : board_need_member, "start_date" : board_start_date, "end_date" : board_end_date, "apply_member" : board_apply, "user_id" : plz_u, "user_name" : user_name, "user_field" : user_class, "user_belong" : user_group}, status=200)
+        return JsonResponse({"read_id" : read_id, "title" : board_title, "content" : board_content, "recruit" : board_recruit, "need_member" : board_need_member, "start_date" : board_start_date, "end_date" : board_end_date, "apply_member" : board_apply, "user_id" : plz_u, "user_name" : user_name, "user_field" : user_class, "user_belong" : user_group}, status=200)
     else: return HttpResponse(status=400)
 
 

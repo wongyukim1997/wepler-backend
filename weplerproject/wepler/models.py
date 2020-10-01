@@ -51,7 +51,7 @@ class Hire_board(models.Model):
     apply_member = models.IntegerField(verbose_name='신청인원')
     timeover = models.CharField(verbose_name='모집여부', max_length=10)
     plz_group = models.CharField(verbose_name='개인/단체', max_length=50)
-
+ 
 #plz가 plus의 게시글을 보고 선택하기 위한 table
 class Choice_board(models.Model):       #이부분이 예빈이가 할 곳이다 여기는 아마도 GET 방식으로 보내야 할 데이터들이다
     plus_user = models.ForeignKey(Plus, on_delete=models.CASCADE)
@@ -62,12 +62,8 @@ class Choice_board(models.Model):       #이부분이 예빈이가 할 곳이다
     plus_name = models.CharField(verbose_name='이름', max_length=10)
     plus_info = models.TextField(verbose_name='자기소개글')
     plus_point = models.FloatField(verbose_name='점수')
+    plus_address_big = models.CharField(verbose_name='행정구역', max_length=10)
 
-class Match(models.Model):
-    plus_user = models.ForeignKey(Plus, on_delete=models.CASCADE)
-    plz_user = models.ForeignKey(Plz, on_delete=models.CASCADE)
-    match_subject =models.CharField(verbose_name='주제', max_length=20)
-    complete = models.BooleanField(verbose_name='완료/진행')
 #plz가 plus를 리뷰한것
 class Plus_review(models.Model):
     plus_user = models.ForeignKey(Plus, on_delete=models.CASCADE)
@@ -102,7 +98,7 @@ class Plus_apply(models.Model):
     plus_address = models.CharField(verbose_name='활동분야(결국 사는곳)', max_length=10)
     plz_class = models.CharField(verbose_name='분야', max_length=50)
     plus_class = models.CharField(verbose_name='분야', max_length=50)
-    plus_date = models.CharField(verbose_name='요일', max_length=10)
+    plus_date = models.CharField(verbose_name='요일', max_length=55)
     hire_id = models.ForeignKey(Hire_board, on_delete=models.CASCADE)
     plus_point = models.FloatField(verbose_name='점수')
 
@@ -113,4 +109,20 @@ class Plz_apply(models.Model):
     plz_user_name = models.CharField(verbose_name='이름', max_length=10)
     plz_address = models.CharField(verbose_name='활동분야(결국 사는곳)', max_length=10)
     plz_class = models.CharField(verbose_name='분야', max_length=50)
-    choice_id = models.ForeignKey(Hire_board, on_delete=models.CASCADE)
+    plus_class = models.CharField(verbose_name='분야', max_length=50)
+    plus_date = models.CharField(verbose_name='요일', max_length=55)
+    choice_id = models.ForeignKey(Choice_board, on_delete=models.CASCADE)
+    hire_id = models.ForeignKey(Hire_board, on_delete=models.CASCADE)
+
+class Match(models.Model):
+    plus_user = models.ForeignKey(Plus, on_delete=models.CASCADE)
+    plz_user = models.ForeignKey(Plz, on_delete=models.CASCADE)
+    plz_name = models.CharField(verbose_name='이름', max_length=10)
+    plus_name = models.CharField(verbose_name='이름', max_length=10) 
+    plus_class = models.CharField(verbose_name='분야', max_length=50)
+    plz_class = models.CharField(verbose_name='분야', max_length=50)
+    plus_address_big = models.CharField(verbose_name='행정구역', max_length=10)
+    plz_address_big = models.CharField(verbose_name='행정구역', max_length=10)
+    match_subject =models.CharField(verbose_name='주제', max_length=20)
+    complete = models.BooleanField(verbose_name='완료/진행')
+    h_id = models.IntegerField(verbose_name='고용게시글')
