@@ -34,18 +34,47 @@ def plus_signup(request):
             plus_continu_month = data['plus_continu_month'],
             plus_point = 0,
         )
-
         for i in range(len(user_class)):
-            Plus_class(
-                plus_user = p_user,
-                class_name = user_class[i],
-            ).save()
-
+            if user_class[i].class_name == 'education':
+                h_class = '교육'
+            elif user_class[i].class_name == 'council':
+                h_class = '상담'
+            elif user_class[i].class_name == 'making':
+                h_class = '메이킹'
+            elif user_class[i].class_name == 'activity':
+                h_class = '야외활동'
+            elif user_class[i].class_name == 'culture':
+                h_class = '문화'
+            elif user_class[i].class_name == 'trip':
+                h_class = '여행'
+            else:
+                h_class = '기타'
+            u_class = u_class + h_class + ' '
+        Plus_class.objects.create(
+            plz_user = p_user,
+            class_name = u_class,
+        )
+        u_day = ''
         for j in range(len(user_day)):
-            Plus_date(
-                plus_user = p_user,
-                plus_start_day = user_day[j],
-            ).save()
+            if user_class[j].class_name == 'monday':
+                h_day = '월요일'
+            elif user_class[j].class_name == 'tuesday':
+                h_day = '화요일'
+            elif user_class[j].class_name == 'wednesday':
+                h_day = '수요일'
+            elif user_class[j].class_name == 'thursday':
+                h_day = '목요일'
+            elif user_class[j].class_name == 'friday':
+                h_day = '금요일'
+            elif user_class[j].class_name == 'saturday':
+                h_day = '토요일'
+            else:
+                h_day = '일요일'
+            u_day = u_day + h_day + ' '
+        Plus_date.objects.create(
+            plus_user=p_user
+            plus_start_day=u_day
+        )
         return HttpResponse(status=200)
     else:
         return HttpResponse(status=400)
@@ -81,11 +110,27 @@ def plz_signup(request):
                         plz_phonenumber = data['plz_phonenumber'],
                         plz_group = user_belong,
                     )
+                    u_class = ''
                     for i in range(len(user_class)):
-                        Plz_class(
-                            plz_user = p_user,
-                            class_name = user_class[i],
-                        ).save()
+                        if user_class[i].class_name == 'education':
+                            h_class = '교육'
+                        elif user_class[i].class_name == 'council':
+                            h_class = '상담'
+                        elif user_class[i].class_name == 'making':
+                            h_class = '메이킹'
+                        elif user_class[i].class_name == 'activity':
+                            h_class = '야외활동'
+                        elif user_class[i].class_name == 'culture':
+                            h_class = '문화'
+                        elif user_class[i].class_name == 'trip':
+                            h_class = '여행'
+                        else:
+                            h_class = '기타'
+                        u_class = u_class + h_class + ' '
+                    Plz_class.objects.create(
+                        plz_user = user_info,
+                        class_name = u_class,
+                    )
                     return JsonResponse({"hasnumber" : True, "hascharacter" : True, "hasspecial" : True}, status=200)
                 else:
                     return JsonResponse({"hasnumber" : True, "hascharacter" : True, "hasspecial" : False}, status=200)

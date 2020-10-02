@@ -76,49 +76,112 @@ def update_user(request):
             user_info = Plus.objects.filter(plus_id=user_id)[0]
             user_field = Plus_class.objects.filter(plus_user=user_id)
             user_field.delete()
-            #user_info.plus_start_day = data['plus_start_day']       #이게 뭔지 모르겠음
             user_info.plus_talentshare = data['plus_talentshare']
             user_info.plus_continu_month = data['plus_continu_month']
             user_info.plus_start_time = data['plus_start_time']
             user_info.plus_end_time = data['plus_end_time']
             user_class = data['plus_fields']
+            user_day = data['plus_start_day']
+            u_class = ''
+            u_day = ''
             for i in range(len(user_class)):
-                Plus_class.objects.create(
-                    plus_user = user_info,
-                    class_name = user_class[i],
-                )
+                if user_class[i].class_name == 'education':
+                    h_class = '교육'
+                elif user_class[i].class_name == 'council':
+                    h_class = '상담'
+                elif user_class[i].class_name == 'making':
+                    h_class = '메이킹'
+                elif user_class[i].class_name == 'activity':
+                    h_class = '야외활동'
+                elif user_class[i].class_name == 'culture':
+                    h_class = '문화'
+                elif user_class[i].class_name == 'trip':
+                    h_class = '여행'
+                else:
+                    h_class = '기타'
+                u_class = u_class + h_class + ' '
+            Plus_class.objects.create(
+                plz_user = user_info,
+                class_name = u_class,
+            )
+            for j in range(len(user_day)):
+                if user_class[j].class_name == 'monday':
+                    h_day = '월요일'
+                elif user_class[j].class_name == 'tuesday':
+                    h_day = '화요일'
+                elif user_class[j].class_name == 'wednesday':
+                    h_day = '수요일'
+                elif user_class[j].class_name == 'thursday':
+                    h_day = '목요일'
+                elif user_class[j].class_name == 'friday':
+                    h_day = '금요일'
+                elif user_class[j].class_name == 'saturday':
+                    h_day = '토요일'
+                else:
+                    h_day = '일요일'
+                u_day = u_day + h_day + ' '
+            Plus_date.objects.create(
+                plus_user=p_user
+                plus_start_day=u_day
+            )
             return HttpResponse(status=200)
         elif Plz.objects.filter(plz_id=user_id).exists() :
             user_info = Plz.objects.filter(plz_id=user_id)[0]
             user_field = Plz_class.objects.filter(plz_user=user_id)
             user_field.delete()
+            
             #plz 어떤 정보 수정인지 알아보기
-            user_class = data['plus_fields']
+            user_class = data['plz_fields']
+            u_class = ''
             for i in range(len(user_class)):
-                Plz_class.objects.create(
-                    plz_user = user_info,
-                    class_name = user_class[i],
-                )
+                if user_class[i].class_name == 'education':
+                    h_class = '교육'
+                elif user_class[i].class_name == 'council':
+                    h_class = '상담'
+                elif user_class[i].class_name == 'making':
+                    h_class = '메이킹'
+                elif user_class[i].class_name == 'activity':
+                    h_class = '야외활동'
+                elif user_class[i].class_name == 'culture':
+                    h_class = '문화'
+                elif user_class[i].class_name == 'trip':
+                    h_class = '여행'
+                else:
+                    h_class = '기타'
+                u_class = u_class + h_class + ' '
+            Plz_class.objects.create(
+                plz_user = user_info,
+                class_name = u_class,
+            )
             return HttpResponse(status=200)
         else: return HttpResponse(status=400)
     else: return HttpResponse(status=403)
 
-def apply_list(request):
+def applied_list(request):
     if request.method == 'GET':
         user_id = tokenCheck(request)
-        qs = Plus_apply.objects.filter(plz_user=user_id)
-        serializer = Plus_ApplySerializer(qs, many=True)
-        print(serializer.data)
-        return JsonResponse(serializer.data, status=200, safe=False)
+        if Plz.objects.filter(plz_id=user_id).exists() :
+            qs = Plus_apply.objects.filter(plz_user=user_id)
+            serializer = Plus_ApplySerializer(qs, many=True)
+            return JsonResponse(serializer.data, status=200, safe=False)
+        else:
+            qs = Plz_apply.objects.filter(plz_user=user_id)
+            serializer = Plz_ApplySerializer(qs, many=True)
+            return JsonResponse(serializer.data, status=200, safe=False)
     else: return HttpResponse(status=400)
 
 #Plus가 신청한걸 Plz가 거절하는 경우
 @csrf_exempt
 def apply_delete(request, apply_id):
     if request.method == 'DELETE':
-        pa = Plus_apply.objects.filter(id=apply_id)[0]
-        pa.delete()
-        return HttpResponse(status = 200)
+        if Plz.objects.filter(plz_id = user_id).exists():
+            pa = Plus_apply.objects.filter(id=apply_id)[0]
+            pa.delete()
+            return HttpResponse(status = 200)
+        else:
+            pa = Plz_apply.objects.filter(id=apply_id)[0]
+            pa.delete()
+            return HttpResponse(status = 200)
     else: return HttpResponse(status=400)
 
 #수락한 경우
@@ -172,25 +235,41 @@ def user_match(request, apply_id): #아직 어떤 정보를 띄우는게 좋은�
         else: return HttpResponse(status=400)
     else: return HttpResponse(status=403)
 
-def apply_detail(request, apply_id):        #이부분은 소현이가 원하는 데이터 넘겨주면 됨
+def applied_detail(request, apply_id):        #이부분은 소현이가 원하는 데이터 넘겨주면 됨
     if request.method == 'GET':
-        apply = Plus_apply.objects.filter(id = apply_id)[0]
-        user_id = apply.plus_user_id
-        p_user = Plus.objects.filter(plus_id = user_id)[0]
-        
-        user_id = apply.plus_user_id
-        user_name = apply.plus_user_name
-        user_class = apply.plus_class
-        user_day = apply.plus_date
-        user_phone = p_user.plus_phonenumber
-        user_address_big = p_user.plus_address_big
-        user_address_small = p_user.plus_address_small
-        user_month = p_user.plus_continu_month
-        user_start = p_user.plus_start_time
-        user_end = p_user.plus_end_time
-        user_talent = p_user.plus_talentshare
-        user_point = p_user.plus_point
-        return JsonResponse({"user_name" : user_name, "user_day" : user_day, "user_start" : user_start, "user_end" : user_end, "user_phone" : user_phone, "user_address_big" : user_address_big, "user_address_small" : user_address_small, "user_class" : user_class, "user_email" : user_id, "user_point" : user_point}, status=200)
+        user_id = tokenCheck(request)
+        if Plz.objects.filter(plz_id = user_id).exists():
+            apply = Plus_apply.objects.filter(id = apply_id)[0]
+            user_id = apply.plus_user_id
+            p_user = Plus.objects.filter(plus_id = user_id)[0]
+            
+            user_id = apply.plus_user_id
+            user_name = apply.plus_user_name
+            user_class = apply.plus_class
+            user_day = apply.plus_date
+            user_phone = p_user.plus_phonenumber
+            user_address_big = p_user.plus_address_big
+            user_address_small = p_user.plus_address_small
+            user_month = p_user.plus_continu_month
+            user_start = p_user.plus_start_time
+            user_end = p_user.plus_end_time
+            user_talent = p_user.plus_talentshare
+            user_point = p_user.plus_point
+            return JsonResponse({"user_name" : user_name, "user_day" : user_day, "user_start" : user_start, "user_end" : user_end, "user_phone" : user_phone, "user_address_big" : user_address_big, "user_address_small" : user_address_small, "user_class" : user_class, "user_email" : user_id, "user_point" : user_point}, status=200)
+        else:
+            apply = Plz_apply.objects.filter(id = apply_id)[0]
+            user_id = apply.plz_user_id
+            p_user = Plz.objects.filter(plz_id = user_id)[0]
+            
+            user_id = apply.plz_user_id
+            user_name = apply.plz_user_name
+            user_class = apply.plz_class
+            user_day = apply.plz_date
+            user_phone = p_user.plz_phonenumber
+            user_address_big = p_user.plz_address_big
+            user_address_small = p_user.plz_address_small
+            #게시글 내용을 좀 채워주면 될듯. 시간이나 제목 같은 거
+            return JsonResponse({"user_name" : user_name, "user_day" : user_day, "user_start" : user_start, "user_end" : user_end, "user_phone" : user_phone, "user_address_big" : user_address_big, "user_address_small" : user_address_small, "user_class" : user_class, "user_email" : user_id, "user_point" : user_point}, status=200)
     else: return HttpResponse(status=400)
 
 def match_detail(request, match_id):
@@ -257,21 +336,18 @@ def match_list(request):
             return JsonResponse(serializer.data, status=200, safe=False)
     else: return HttpResponse(status=400)
 
-#완료된 봉사, plz에서 볼 것
-def plz_complete_list(request):
+#완료된 활동
+def complete_list(request):
     if request.method == 'GET':
-        user_id = tokenCheck(request)
-        qs = Match.objects.filter(plz_user=user_id).filter(complete=True)
-        serializer = MatchSerializer(qs, many=True)
-        return JsonResponse(serializer.data, status=200, safe=False)
-    else: return HttpResponse(status=400)
-
-#완료된 봉사, plus에서 볼 것
-def plus_complete_list(request):
-    if request.method == 'GET':
-        user_id = tokenCheck(request)
-        qs = Match.objects.filter(plz_user=user_id).filter(complete=True)
-        serializer = MatchSerializer(qs, many=True)
+        if Plz.objects.filter(plz_id = user_id).exists():
+            user_id = tokenCheck(request)
+            qs = Match.objects.filter(plz_user=user_id).filter(complete=True)
+            serializer = MatchSerializer(qs, many=True)
+            return JsonResponse(serializer.data, status=200, safe=False)
+        else:
+            user_id = tokenCheck(request)
+            qs = Match.objects.filter(plz_user=user_id).filter(complete=True)
+            serializer = MatchSerializer(qs, many=True)
         return JsonResponse(serializer.data, status=200, safe=False)
     else: return HttpResponse(status=400)
 

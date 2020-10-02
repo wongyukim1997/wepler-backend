@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 import jwt                                      # 토큰 발행에 사용
 from django.views.decorators.csrf import csrf_exempt
 import json
+from datetime import datetime, date
 
 #review 작성할 때 완료된 리스트는 mypage에서 가져온다.
 
@@ -33,12 +34,12 @@ def plus_review_detail(request, review_id):
         review = Plus_review.objects.filter(id = review_id)[0]
         review_title = review.title
         review_content = review.content
-        review_Write = review.plz_user
+        review_Write = review.plz_user_id
         review_Write_name = review.plz_name
-        review_plus = review.plus_user
+        review_plus = review.plus_user_id
         review_plus_name = review.plus_name
         review_point = review.plus_point
-        review_plz_class = review_plz_class
+        review_plz_class = review.plus_class
         return JsonResponse({"writer" : review_Write, "writer_name" : review_Write_name, "matching" : review_plus, "matching_name" : review_plus_name, "writer_class" : review_plz_class, "title" : review_title, "content" : review_content, "rating" : review_point}, status=200)
     else: return HttpResponse(status=400)
 
@@ -72,41 +73,61 @@ def plus_review_delete(request, review_id):
         return HttpResponse(status = 200)
     else: return HttpResponse(status=400)
 
+#plz를 리뷰한 리스트
 class Plz_review_list(viewsets.ModelViewSet):
     queryset = Plz_review.objects.all().order_by('-id')
     serializer_class = Plz_reviewSerializer
 
+#plus를 리뷰한 리스트
 class Plus_review_list(viewsets.ModelViewSet):
     queryset = Plus_review.objects.all().order_by('-id')
     serializer_class = Plus_reviewSerializer
 
 @csrf_exempt
-def plus_review_post(request):              #plus를 리뷰하는 함수(plz가 작성함)
+def review_update(request, review_id):
     if request.method == 'POST':
         data = json.loads(request.body)
         user_id = tokenCheck(request)
+        if Plz.objects.filter(plz_id = user_id).exists():
+            review = Plus_review.objects.filter(id = review_id)[0]
+            review.title = data['title']
+            review.content = data['content']
+            review.save()
+            return HttpResponse(status=200)
+        elif Plus.objects.filter(plus_id = user_id).exists():
+            review = Plz_review.objects.filter(id = review_id)[0]
+            review.title = data['title']
+            review.content = data['content']
+            review.save()
+            return HttpResponse(status=200)
+        else: return HttpResponse(status=400)
+    else: return HttpResponse(status=400)
+
+@csrf_exempt
+def review_post(request):              #plus를 리뷰하는 함수(plz가 작성함)
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        user_id = tokenCheck(request)
+        print(datetime.strptime(str(datetime.now().date()), '%Y-%m-%d'))
         if Plz.objects.filter(plz_id = user_id).exists():   #plz가 작성한다면
-            user_class = Plz_class.objects.filter(plz_user = user_id)
-            u_class = ''
-            for i in range(user_class.count()):
-                u_class = u_class + user_class[i].class_name + ' '
             Plus_review.objects.create(
                 plus_user = Plus.objects.filter(plus_id = data['matching'])[0],
                 plz_user = Plz.objects.filter(plz_id = user_id)[0],
-                date = timezone.datetime.now(),
-                title = data[title],
-                content = data[content],
+                date = datetime.today().strftime('%Y-%m-%d'),
+                title = data['title'],
+                content = data['content'],
                 plus_name = Plus.objects.filter(plus_id = data['matching'])[0].plus_name,
                 plz_name = Plz.objects.filter(plz_id = user_id)[0].plz_name,
-                plus_point = data[rating],
-                plus_class = u_class
+                plus_point = data['rating'],
+                plus_class = Hire_board.objects.filter(plz_user = user_id)[0].plz_class,
             )
             sum = 0
             p_review = Plus_review.objects.filter(plus_user=data['matching'])
             p_user = Plus.objects.filter(plus_id=data['matching'])[0]
             for i in range(p_review.count()):
                 sum = sum + p_review[i].plus_point
-            p_user.plus_point = sum / p_review.count()
+            point = sum / p_review.count()
+            p_user.plus_point = round(point, 1)
             p_user.save()
             return HttpResponse(status=200)
         elif Plus.objects.filter(plus_id = user_id).exists():   #plz가 작성한다면
@@ -117,11 +138,11 @@ def plus_review_post(request):              #plus를 리뷰하는 함수(plz가 
             Plz_review.objects.create(
                 plus_user = Plus.objects.filter(plus_id = user_id)[0],
                 plz_user = Plz.objects.filter(plz_id = data['matching'])[0],
-                date = timezone.datetime.now(),
+                date = datetime.today().strftime('%Y-%m-%d'),
                 title = data[title],
                 content = data[content],
                 plus_name = Plus.objects.filter(plus_id = user_id)[0].plus_name,
-                plz_name = Plz.objects.filter(plz_id = data['matching'][0].plz_name),
+                plz_name = Plz.objects.filter(plz_id = data['matching'])[0].plz_name,
                 plz_class = u_class,
                 )
             return HttpResponse(status=0)

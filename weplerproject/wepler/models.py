@@ -16,6 +16,7 @@ class Plus(models.Model):
     plus_point = models.FloatField(verbose_name='점수')
     #한줄소개, 프로필 타입
     
+#class name 크기 늘리기
 class Plus_class(models.Model):
     plus_user = models.ForeignKey(Plus, on_delete=models.CASCADE)
     class_name = models.CharField(verbose_name='분야', max_length=30)
@@ -30,6 +31,7 @@ class Plz(models.Model):
     plz_address_big = models.CharField(verbose_name='행정구역', max_length=10)
     plz_when_learn = models.CharField(verbose_name='희망 기간', max_length=50)
 
+#class name 크기 늘리기
 class Plz_class(models.Model):
     plz_user = models.ForeignKey(Plz, on_delete=models.CASCADE)
     class_name = models.CharField(verbose_name='분야', max_length=30)
@@ -38,7 +40,7 @@ class Plus_team(models.Model):
     plus_user = models.ForeignKey(Plus, on_delete=models.CASCADE)
     member_number = models.IntegerField(verbose_name='인원수')
 
-class Hire_board(models.Model):
+class Hire_board(models.Model):     #이름 추가하기
     plz_user = models.ForeignKey(Plz, on_delete=models.CASCADE)
     plz_class = models.CharField(verbose_name='분야', max_length=50)
     title = models.CharField(max_length=20, verbose_name='제목')
@@ -65,6 +67,7 @@ class Choice_board(models.Model):       #이부분이 예빈이가 할 곳이다
     plus_address_big = models.CharField(verbose_name='행정구역', max_length=10)
 
 #plz가 plus를 리뷰한것
+#date는 date필드로 바꿀것
 class Plus_review(models.Model):
     plus_user = models.ForeignKey(Plus, on_delete=models.CASCADE)
     plz_user = models.ForeignKey(Plz, on_delete=models.CASCADE)
