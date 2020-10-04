@@ -131,10 +131,6 @@ def review_post(request):              #plus를 리뷰하는 함수(plz가 작�
             p_user.save()
             return HttpResponse(status=200)
         elif Plus.objects.filter(plus_id = user_id).exists():   #plz가 작성한다면
-            user_class = Plus_class.objects.filter(plus_user = user_id)
-            u_class = ''
-            for i in range(user_class.count()):
-                u_class = u_class + user_class[i].class_name + ' '
             Plz_review.objects.create(
                 plus_user = Plus.objects.filter(plus_id = user_id)[0],
                 plz_user = Plz.objects.filter(plz_id = data['matching'])[0],
@@ -143,7 +139,7 @@ def review_post(request):              #plus를 리뷰하는 함수(plz가 작�
                 content = data[content],
                 plus_name = Plus.objects.filter(plus_id = user_id)[0].plus_name,
                 plz_name = Plz.objects.filter(plz_id = data['matching'])[0].plz_name,
-                plz_class = u_class,
+                plz_class = Plz.objects.filter(plz_id = data['matching'])[0].plz_class,
                 )
             return HttpResponse(status=0)
         else: return HttpResponse(status=400)

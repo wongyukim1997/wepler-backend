@@ -4,6 +4,7 @@ import wepler.views
 import board.views
 import mypage.views
 import review.views
+import choice_plus.views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -14,4 +15,5 @@ urlpatterns = [
     path('board/', include('board.url')),
     path('mypage/', include('mypage.url')),
     path('review/', include('review.url')),
+    path('choice_plus/', include('choice_plus.url')),
 ]

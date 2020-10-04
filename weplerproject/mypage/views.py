@@ -32,35 +32,24 @@ def getMypage(request):
             user_info = Plus.objects.filter(plus_id = user_id)[0]
             user_name = user_info.plus_name
             user_phone = user_info.plus_phonenumber
-            print(user_phone)
             user_address_big = user_info.plus_address_big
             user_address_small = user_info.plus_address_small
             user_month = user_info.plus_continu_month
             user_start = user_info.plus_start_time
             user_end = user_info.plus_end_time
             user_talent = user_info.plus_talentshare
-            user_class_count = Plus_class.objects.filter(plus_user_id = user_id)
-            user_day_count = Plus_date.objects.filter(plus_user = user_id)
-            user_class = []
-            user_day = []
-            for i in range(user_class_count.count()):
-                user_class.append(user_class_count[i].class_name)
-            for j in range(user_day_count.count()):
-                user_day.append(user_day_count[j].plus_start_day)
+            user_class = user_info.plus_class
+            user_day = user_info.plus_date
             return JsonResponse({"user_name" : user_name, "user_phone" : user_phone, "user_class" : user_class, "user_email" : user_id, "user_address_big" : user_address_big, "user_address_small" : user_address_small, "user_continu_month" : user_month, "user_start_time" : user_start, "user_end_time" : user_end, "user_talentshare" : user_talent, "user_start_day" : user_day}, status=200)
         elif Plz.objects.filter(plz_id = user_id).exists():
             user_info = Plz.objects.filter(plz_id = user_id)[0]
             user_name = user_info.plz_name
             user_phone = user_info.plz_phonenumber
-            print(user_phone)
             user_address_big = user_info.plz_address_big
             user_address_small = user_info.plz_address_small
             user_group = user_info.plz_group
             user_when_learn = user_info.plz_when_learn
-            user_class_count = Plz_class.objects.filter(plz_user_id = user_id)
-            user_class = []
-            for i in range(user_class_count.count()):
-                user_class.append(user_class_count[i].class_name)
+            user_class = user_info.plz_class
             return JsonResponse({"user_name" : user_name, "user_phone" : user_phone, "user_address_big" : user_address_big, "user_address_small" : user_address_small, "user_group" : user_group, "user_when_learn" : user_when_learn, "user_class" : user_class, "user_email" : user_id}, status=200)
         else:
             return HttpResponse(staus = 403)
@@ -74,8 +63,6 @@ def update_user(request):
         user_id = tokenCheck(request)
         if Plus.objects.filter(plus_id=user_id).exists() :
             user_info = Plus.objects.filter(plus_id=user_id)[0]
-            user_field = Plus_class.objects.filter(plus_user=user_id)
-            user_field.delete()
             user_info.plus_talentshare = data['plus_talentshare']
             user_info.plus_continu_month = data['plus_continu_month']
             user_info.plus_start_time = data['plus_start_time']
@@ -85,51 +72,44 @@ def update_user(request):
             u_class = ''
             u_day = ''
             for i in range(len(user_class)):
-                if user_class[i].class_name == 'education':
+                if user_class[i] == 'education':
                     h_class = '교육'
-                elif user_class[i].class_name == 'council':
+                elif user_class[i] == 'council':
                     h_class = '상담'
-                elif user_class[i].class_name == 'making':
+                elif user_class[i] == 'making':
                     h_class = '메이킹'
-                elif user_class[i].class_name == 'activity':
+                elif user_class[i] == 'activity':
                     h_class = '야외활동'
-                elif user_class[i].class_name == 'culture':
+                elif user_class[i] == 'culture':
                     h_class = '문화'
-                elif user_class[i].class_name == 'trip':
+                elif user_class[i] == 'trip':
                     h_class = '여행'
                 else:
                     h_class = '기타'
                 u_class = u_class + h_class + ' '
-            Plus_class.objects.create(
-                plz_user = user_info,
-                class_name = u_class,
-            )
+            
             for j in range(len(user_day)):
-                if user_class[j].class_name == 'monday':
+                if user_day[j] == 'monday':
                     h_day = '월요일'
-                elif user_class[j].class_name == 'tuesday':
+                elif user_day[j] == 'tuesday':
                     h_day = '화요일'
-                elif user_class[j].class_name == 'wednesday':
+                elif user_day[j] == 'wednesday':
                     h_day = '수요일'
-                elif user_class[j].class_name == 'thursday':
+                elif user_day[j] == 'thursday':
                     h_day = '목요일'
-                elif user_class[j].class_name == 'friday':
+                elif user_day[j] == 'friday':
                     h_day = '금요일'
-                elif user_class[j].class_name == 'saturday':
+                elif user_day[j] == 'saturday':
                     h_day = '토요일'
                 else:
                     h_day = '일요일'
                 u_day = u_day + h_day + ' '
-            Plus_date.objects.create(
-                plus_user=p_user
-                plus_start_day=u_day
-            )
+            user_info.plus_class = u_class
+            user_info.plus_date = u_day
+            user_info.save()
             return HttpResponse(status=200)
         elif Plz.objects.filter(plz_id=user_id).exists() :
             user_info = Plz.objects.filter(plz_id=user_id)[0]
-            user_field = Plz_class.objects.filter(plz_user=user_id)
-            user_field.delete()
-            
             #plz 어떤 정보 수정인지 알아보기
             user_class = data['plz_fields']
             u_class = ''
@@ -149,16 +129,17 @@ def update_user(request):
                 else:
                     h_class = '기타'
                 u_class = u_class + h_class + ' '
-            Plz_class.objects.create(
-                plz_user = user_info,
-                class_name = u_class,
-            )
+            user_info.plz_class = u_class
+            user_info.save()
             return HttpResponse(status=200)
         else: return HttpResponse(status=400)
     else: return HttpResponse(status=403)
 
 def applied_list(request):
     if request.method == 'GET':
+        print("작동")
+        token = request.headers.get('Authorization', None)
+        print(token)
         user_id = tokenCheck(request)
         if Plz.objects.filter(plz_id=user_id).exists() :
             qs = Plus_apply.objects.filter(plz_user=user_id)
@@ -166,6 +147,19 @@ def applied_list(request):
             return JsonResponse(serializer.data, status=200, safe=False)
         else:
             qs = Plz_apply.objects.filter(plz_user=user_id)
+            serializer = Plz_ApplySerializer(qs, many=True)
+            return JsonResponse(serializer.data, status=200, safe=False)
+    else: return HttpResponse(status=400)
+
+def apply_list(request):
+    if request.method == 'GET':
+        user_id = tokenCheck(request)
+        if Plz.objects.filter(plz_id=user_id).exists() :
+            qs = Plz_apply.objects.filter(plz_user=user_id)
+            serializer = Plus_ApplySerializer(qs, many=True)
+            return JsonResponse(serializer.data, status=200, safe=False)
+        else:
+            qs = Plus_apply.objects.filter(plz_user=user_id)
             serializer = Plz_ApplySerializer(qs, many=True)
             return JsonResponse(serializer.data, status=200, safe=False)
     else: return HttpResponse(status=400)
@@ -187,7 +181,7 @@ def apply_delete(request, apply_id):
 #수락한 경우
 @csrf_exempt
 def user_match(request, apply_id): #아직 어떤 정보를 띄우는게 좋은지 모른다.
-    print("작동")
+    print("작동-")
     if request.method == 'POST':
         user_id = tokenCheck(request)
         if Plz.objects.filter(plz_id = user_id).exists():
@@ -195,43 +189,49 @@ def user_match(request, apply_id): #아직 어떤 정보를 띄우는게 좋은�
             p_id = Plus_apply.objects.filter(id=apply_id)[0].plus_user_id
             plz = Plz.objects.filter(plz_id = user_id)[0]
             plus = Plus.objects.filter(plus_id = p_id)[0]
-            Match.objects.create(
-                plz_user = plz,
-                plus_user = plus,
-                plz_name = plz.plz_name,
-                plus_name = plus.plus_name,
-                plz_address_big = plz.plz_address_big,
-                plus_address_big = plus.plus_address_big,
-                plz_class = Hire_board.objects.filter(id=h_id)[0].plz_class,
-                plus_class = Plus_apply.objects.filter(id=apply_id)[0].plus_class,
-                match_subject = Hire_board.objects.filter(id=h_id)[0].title,
-                complete = False,
-                h_id = h_id,
-            )
-            apply = Plus_apply.objects.filter(id=apply_id)
-            apply.delete()
-            return HttpResponse(status=200)
+            if(Match.objects.filter(plus_user=p_id).filter(plz_user=user_id).exists()):
+                return JsonResponse({"isoverap" : True}, status=200)
+            else:
+                Match.objects.create(
+                    plz_user = plz,
+                    plus_user = plus,
+                    plz_name = plz.plz_name,
+                    plus_name = plus.plus_name,
+                    plz_address_big = plz.plz_address_big,
+                    plus_address_big = plus.plus_address_big,
+                    plz_class = Hire_board.objects.filter(id=h_id)[0].plz_class,
+                    plus_class = Plus_apply.objects.filter(id=apply_id)[0].plus_class,
+                    match_subject = Hire_board.objects.filter(id=h_id)[0].title,
+                    complete = False,
+                    h_id = h_id,
+                )
+                apply = Plus_apply.objects.filter(id=apply_id)
+                apply.delete()
+                return JsonResponse({"isoverap" : False}, status=200)
         elif Plus.objects.filter(plus_id=user_id).exists() :
             h_id = Plz_apply.objects.filter(id=apply_id)[0].hire_id_id
             p_id = Plz_apply.objects.filter(id=apply_id)[0].plz_user_id
             plz = Plz.objects.filter(plz_id = p_id)[0]
             plus = Plus.objects.filter(plus_id = user_id)[0]
-            Match.objects.create(
-                plz_user = plz,
-                plus_user = plus,
-                plz_name = plz.plz_name,
-                plus_name = plus.plus_name,
-                plz_address_big = plz.plz_address_big,
-                plus_address_big = plus.plus_address_big,
-                plz_class = Hire_board.objects.filter(id=h_id)[0].plz_class,
-                plus_class = Plz_apply.objects.filter(id=apply_id)[0].plus_class,
-                match_subject = Hire_board.objects.filter(id=h_id)[0].title,
-                complete = False,
-                h_id = h_id,
-            )
-            apply = Plz_apply.objects.filter(id=apply_id)
-            apply.delete()
-            return HttpResponse(status=200)
+            if(Match.objects.filter(plus_user=user_id).filter(plz_user=p_id).exists()):
+                return JsonResponse({"isoverap" : True}, status=200)
+            else:
+                Match.objects.create(
+                    plz_user = plz,
+                    plus_user = plus,
+                    plz_name = plz.plz_name,
+                    plus_name = plus.plus_name,
+                    plz_address_big = plz.plz_address_big,
+                    plus_address_big = plus.plus_address_big,
+                    plz_class = Hire_board.objects.filter(id=h_id)[0].plz_class,
+                    plus_class = Plz_apply.objects.filter(id=apply_id)[0].plus_class,
+                    match_subject = Hire_board.objects.filter(id=h_id)[0].title,
+                    complete = False,
+                    h_id = h_id,
+                )
+                apply = Plz_apply.objects.filter(id=apply_id)
+                apply.delete()
+                return JsonResponse({"isoverap" : False}, status=200)
         else: return HttpResponse(status=400)
     else: return HttpResponse(status=403)
 
@@ -288,7 +288,7 @@ def match_detail(request, match_id):
     else: return HttpResponse(status=400)
         
 #진행중인 숫자
-def match_count(request):
+def match_list_count(request):
     if request.method == 'GET':
         user_id = tokenCheck(request)
         if Plz.objects.filter(plz_id = user_id).exists():
@@ -300,7 +300,7 @@ def match_count(request):
     else: return HttpResponse(status=400)
 
 #완료한거 숫자
-def complete_count(request):
+def complete_list_count(request):
     if request.method == 'GET':
         user_id = tokenCheck(request)
         if Plz.objects.filter(plz_id = user_id).exists():
@@ -312,8 +312,9 @@ def complete_count(request):
     else: return HttpResponse(status=400)
 
 #신청받은거 숫자
-def apply_count(request):
+def applied_list_count(request):
     if request.method == 'GET':
+        print("작동")
         user_id = tokenCheck(request)
         if Plz.objects.filter(plz_id = user_id).exists():
             apply = Plus_apply.objects.filter(plz_user=user_id).count()
@@ -339,6 +340,7 @@ def match_list(request):
 #완료된 활동
 def complete_list(request):
     if request.method == 'GET':
+        user_id = tokenCheck(request)
         if Plz.objects.filter(plz_id = user_id).exists():
             user_id = tokenCheck(request)
             qs = Match.objects.filter(plz_user=user_id).filter(complete=True)

@@ -16,10 +16,6 @@ class Hire_boardSerializer(serializers.ModelSerializer):
         model = Hire_board
         fields = '__all__'
 
-class Choice_boardSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Choice_board
-        fields = '__all__'
 
 class Plus_ApplySerializer(serializers.ModelSerializer):
     class Meta:
@@ -44,4 +40,9 @@ class Plus_reviewSerializer(serializers.ModelSerializer):
 class Plz_reviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Plz_review
+        fields = '__all__'
+
+class Choice_boardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Choice_board
         fields = '__all__'

@@ -32,32 +32,16 @@ def hire_board(request):                    # 받을 때 field 값은 그냥 plz
         user_id = tokenCheck(request)
         if Plz.objects.filter(plz_id = user_id).exists(): 
             data = json.loads(request.body)
-            user_class = Plz_class.objects.filter(plz_user = user_id)
-            u_class = ''
+            
             is_timeover = "모집중"
             a = datetime.strptime(str(data['recruit']), '%Y-%m-%d')      #정한 시간
             b = datetime.strptime(str(datetime.now().date()), '%Y-%m-%d')      #지금 시간, 정한 시간보다 작아야함
             if a < b :
                 is_timeover = "모집 마감"
-            for i in range(user_class.count()):
-                if user_class[i].class_name == 'education':
-                    h_class = '교육'
-                elif user_class[i].class_name == 'council':
-                    h_class = '상담'
-                elif user_class[i].class_name == 'making':
-                    h_class = '메이킹'
-                elif user_class[i].class_name == 'activity':
-                    h_class = '야외활동'
-                elif user_class[i].class_name == 'culture':
-                    h_class = '문화'
-                elif user_class[i].class_name == 'trip':
-                    h_class = '여행'
-                else:
-                    h_class = '기타'
-                u_class = u_class + h_class + ' '
+           
             Hire_board.objects.create(
                 plz_user = Plz.objects.filter(plz_id = user_id)[0], 
-                plz_class = u_class,
+                plz_class = Plz.objects.filter(plz_id = user_id)[0].plz_class,
                 title = data['title'],
                 recruit = data['recruit'],
                 need_member = data['need_member'],
@@ -84,28 +68,6 @@ def apply(request, board_id):
     if request.method == 'POST':
         user_id = tokenCheck(request)
         if Plus.objects.filter(plus_id = user_id).exists():
-            user_class = Plus_class.objects.filter(plus_user = user_id)
-            u_class = ''
-            for i in range(user_class.count()):
-                if user_class[i].class_name == 'education':
-                    h_class = '교육'
-                elif user_class[i].class_name == 'council':
-                    h_class = '상담'
-                elif user_class[i].class_name == 'making':
-                    h_class = '메이킹'
-                elif user_class[i].class_name == 'activity':
-                    h_class = '야외활동'
-                elif user_class[i].class_name == 'culture':
-                    h_class = '문화'
-                elif user_class[i].class_name == 'trip':
-                    h_class = '여행'
-                else:
-                    h_class = '기타'
-                u_class = u_class + h_class + ' '
-            user_day = Plus_date.objects.filter(plus_user = user_id)
-            u_day = ''
-            for j in range(user_day.count()):
-                u_day = u_day + user_day[j].plus_start_day + ' '
             plz_u = Hire_board.objects.filter(id = board_id)[0].plz_user_id
             a = datetime.strptime(str(Hire_board.objects.filter(id=board_id)[0].recruit), '%Y-%m-%d')      #정한 시간
             b = datetime.strptime(str(datetime.now().date()), '%Y-%m-%d')
@@ -122,10 +84,10 @@ def apply(request, board_id):
                     plus_address = Plus.objects.filter(plus_id = user_id)[0].plus_address_big,
                     title = Hire_board.objects.filter(plz_user = plz_u)[0].title,
                     plz_class = Hire_board.objects.filter(id=board_id)[0].plz_class,
-                    plus_date = u_day,
+                    plus_date = Plus.objects.filter(plus_id = user_id)[0].plus_date,
                     hire_id = Hire_board.objects.filter(id=board_id)[0],
                     plus_point = Plus.objects.filter(plus_id = user_id)[0].plus_point,
-                    plus_class = u_class,
+                    plus_class = Plus.objects.filter(plus_id = user_id)[0].plus_class,
                 )
                 apply_number = Plus_apply.objects.filter(plz_user = plz_u).count()
                 h_board = Hire_board.objects.filter(id = board_id)[0]

@@ -13,69 +13,90 @@ import re
 
 @csrf_exempt
 def plus_signup(request):
+    special = "!@#$%&_="
     if request.method =='POST':
         data = json.loads(request.body)
-        password = data['plus_password'].encode('utf-8')                 # 입력된 패스워드를 바이트 형태로 인코딩
-        password_crypt = bcrypt.hashpw(password, bcrypt.gensalt())  # 암호화된 비밀번호 생성
-        password_crypt = password_crypt.decode('utf-8')             # DB에 저장할 수 있는 유니코드 문자열 형태로 디코딩
-        user_day = data['plus_start_day']
-        user_class = data['plus_fields']
-        p_user = Plus.objects.create(
-            plus_id = data['plus_email'],
-            plus_name = data['plus_name'],
-            plus_password = password_crypt,
-            plus_address_small = data['plus_address_small'],
-            plus_address_big = data['plus_address_big'],
-            plus_phonenumber = data['plus_phonenumber'],
-            plus_edu = False,
-            plus_talentshare = data['plus_talentshare'],
-            plus_start_time = data['plus_start_time'],
-            plus_end_time = data['plus_end_time'],
-            plus_continu_month = data['plus_continu_month'],
-            plus_point = 0,
-        )
-        for i in range(len(user_class)):
-            if user_class[i].class_name == 'education':
-                h_class = '교육'
-            elif user_class[i].class_name == 'council':
-                h_class = '상담'
-            elif user_class[i].class_name == 'making':
-                h_class = '메이킹'
-            elif user_class[i].class_name == 'activity':
-                h_class = '야외활동'
-            elif user_class[i].class_name == 'culture':
-                h_class = '문화'
-            elif user_class[i].class_name == 'trip':
-                h_class = '여행'
+        if re.search(r'\d', data['plus_password']):
+            if re.search(r'\D', data['plus_password']):
+                if any(s in special for s in data['plus_password']):
+                    password = data['plus_password'].encode('utf-8')                 # 입력된 패스워드를 바이트 형태로 인코딩
+                    password_crypt = bcrypt.hashpw(password, bcrypt.gensalt())  # 암호화된 비밀번호 생성
+                    password_crypt = password_crypt.decode('utf-8')             # DB에 저장할 수 있는 유니코드 문자열 형태로 디코딩
+                    user_day = data['plus_start_day']
+                    user_class = data['plus_fields']
+                    u_class = ''
+                    u_day = ''
+                    for i in range(len(user_class)):
+                        if user_class[i] == 'education':
+                            h_class = '교육'
+                        elif user_class[i] == 'council':
+                            h_class = '상담'
+                        elif user_class[i] == 'making':
+                            h_class = '메이킹'
+                        elif user_class[i] == 'activity':
+                            h_class = '야외활동'
+                        elif user_class[i] == 'culture':
+                            h_class = '문화'
+                        elif user_class[i] == 'trip':
+                            h_class = '여행'
+                        else:
+                            h_class = '기타'
+                        u_class = u_class + h_class + ' '
+                    for j in range(len(user_day)):
+                        if user_day[j] == 'monday':
+                            h_day = '월요일'
+                        elif user_day[j] == 'tuesday':
+                            h_day = '화요일'
+                        elif user_day[j] == 'wednesday':
+                            h_day = '수요일'
+                        elif user_day[j] == 'thursday':
+                            h_day = '목요일'
+                        elif user_day[j] == 'friday':
+                            h_day = '금요일'
+                        elif user_day[j] == 'saturday':
+                            h_day = '토요일'
+                        else:
+                            h_day = '일요일'
+                        u_day = u_day + h_day + ' '
+                    p_user = Plus.objects.create(
+                        plus_id = data['plus_email'],
+                        plus_name = data['plus_name'],
+                        plus_password = password_crypt,
+                        plus_address_small = data['plus_address_small'],
+                        plus_address_big = data['plus_address_big'],
+                        plus_phonenumber = data['plus_phonenumber'],
+                        plus_edu = False,
+                        plus_talentshare = data['plus_talentshare'],
+                        plus_start_time = data['plus_start_time'],
+                        plus_end_time = data['plus_end_time'],
+                        plus_continu_month = data['plus_continu_month'],
+                        plus_point = 0,
+                        plus_class = u_class,
+                        plus_date = u_day,
+                        plus_info = "z"
+                    )
+                    Choice_board.objects.create(
+                        plus_user = p_user,
+                        plus_name = data['plus_name'],
+                        plus_address_small = data['plus_address_small'],
+                        plus_address_big = data['plus_address_big'],
+                        plus_phonenumber = data['plus_phonenumber'],
+                        plus_start_time = data['plus_start_time'],
+                        plus_end_time = data['plus_end_time'],
+                        plus_continu_month = data['plus_continu_month'],
+                        plus_point = 0,
+                        plus_class = u_class,
+                        plus_date = u_day,
+                        plus_info = "z",
+                        plus_edu = False,
+                    )
+                    return JsonResponse({"hasnumber" : True, "hascharacter" : True, "hasspecial" : True}, status=200)
+                else:
+                    return JsonResponse({"hasnumber" : True, "hascharacter" : True, "hasspecial" : False}, status=200)
             else:
-                h_class = '기타'
-            u_class = u_class + h_class + ' '
-        Plus_class.objects.create(
-            plz_user = p_user,
-            class_name = u_class,
-        )
-        u_day = ''
-        for j in range(len(user_day)):
-            if user_class[j].class_name == 'monday':
-                h_day = '월요일'
-            elif user_class[j].class_name == 'tuesday':
-                h_day = '화요일'
-            elif user_class[j].class_name == 'wednesday':
-                h_day = '수요일'
-            elif user_class[j].class_name == 'thursday':
-                h_day = '목요일'
-            elif user_class[j].class_name == 'friday':
-                h_day = '금요일'
-            elif user_class[j].class_name == 'saturday':
-                h_day = '토요일'
-            else:
-                h_day = '일요일'
-            u_day = u_day + h_day + ' '
-        Plus_date.objects.create(
-            plus_user=p_user
-            plus_start_day=u_day
-        )
-        return HttpResponse(status=200)
+                return JsonResponse({"hasnumber" : True, "hascharacter" : False}, status=200)
+        else:
+            return JsonResponse({"hasnumber" : False}, status=200)
     else:
         return HttpResponse(status=400)
 
@@ -92,14 +113,30 @@ def plz_signup(request):
                     password_crypt = password_crypt.decode('utf-8')             # DB에 저장할 수 있는 유니코드 문자열 형태로 디코딩
                     user_class = data['plz_fields']
 
-                    if data['plz_belong'] == {'individual': True}: user_belong = 'individual'
-                    else: user_belong = 'group'
+                    if data['plz_belong'] == {'individual': True}: user_belong = '개인'
+                    else: user_belong = '단체'
                     
-                    if data['plz_when_learn'] == {'specific': True}: user_when = 'specific'
-                    elif data['plz_when_learn'] == {'regularly': True}: user_when = 'regularly'
-                    else: user_when = 'thinking'
-                        
-                    print(data['plz_phonenumber']) 
+                    if data['plz_when_learn'] == {'specific': True}: user_when = '특별한 날'
+                    elif data['plz_when_learn'] == {'regularly': True}: user_when = '정기적으로'
+                    else: user_when = '생각중'
+                    u_class = ''
+                    for i in range(len(user_class)):
+                        if user_class[i] == 'education':
+                            h_class = '교육'
+                        elif user_class[i] == 'council':
+                            h_class = '상담'
+                        elif user_class[i] == 'making':
+                            h_class = '메이킹'
+                        elif user_class[i] == 'activity':
+                            h_class = '야외활동'
+                        elif user_class[i] == 'culture':
+                            h_class = '문화'
+                        elif user_class[i] == 'trip':
+                            h_class = '여행'
+                        else:
+                            h_class = '기타'
+                        u_class = u_class + h_class + ' '
+                    
                     p_user = Plz.objects.create(
                         plz_id = data['plz_email'],
                         plz_name = data['plz_name'],
@@ -109,27 +146,7 @@ def plz_signup(request):
                         plz_when_learn = data['plz_when_learn'],
                         plz_phonenumber = data['plz_phonenumber'],
                         plz_group = user_belong,
-                    )
-                    u_class = ''
-                    for i in range(len(user_class)):
-                        if user_class[i].class_name == 'education':
-                            h_class = '교육'
-                        elif user_class[i].class_name == 'council':
-                            h_class = '상담'
-                        elif user_class[i].class_name == 'making':
-                            h_class = '메이킹'
-                        elif user_class[i].class_name == 'activity':
-                            h_class = '야외활동'
-                        elif user_class[i].class_name == 'culture':
-                            h_class = '문화'
-                        elif user_class[i].class_name == 'trip':
-                            h_class = '여행'
-                        else:
-                            h_class = '기타'
-                        u_class = u_class + h_class + ' '
-                    Plz_class.objects.create(
-                        plz_user = user_info,
-                        class_name = u_class,
+                        plz_class = u_class,
                     )
                     return JsonResponse({"hasnumber" : True, "hascharacter" : True, "hasspecial" : True}, status=200)
                 else:
@@ -166,7 +183,7 @@ def login(request):
             else:
                 return HttpResponse(status=401)
         else:
-            return HttpResponse(status=400)
+            return HttpResponse(status=401)
     else:
         return HttpResponse(status=400)
 

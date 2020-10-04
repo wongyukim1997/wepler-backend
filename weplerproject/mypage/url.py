@@ -14,4 +14,7 @@ urlpatterns = [
     path('match_detail/<int:match_id>/', mypage.views.match_detail),
     path('complete_detail/<int:match_id>/', mypage.views.match_detail),
     path('complete_list/', mypage.views.complete_list),
+    path('complete_list_count/', mypage.views.complete_list_count),
+    path('applied_list_count/', mypage.views.applied_list_count),
+    path('match_list_count/', mypage.views.match_list_count),
 ]
