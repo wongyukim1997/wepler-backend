@@ -49,12 +49,24 @@ def plz_review_detail(request, review_id):
         review = Plz_review.objects.filter(id = review_id)[0]
         review_title = review.title
         review_content = review.content
-        review_Write = review.plus_user
+        review_Write = review.plus_user_id
         review_Write_name = review.plus_name
-        review_plz = review.plz_user
+        review_plz = review.plz_user_id
         review_plz_name = review.plz_name
-        review_plus_class = review_plus_class
+        review_plus_class = review.plz_class
         return JsonResponse({"writer" : review_Write, "writer_name" : review_Write_name, "matching" : review_plz, "matching_name" : review_plz_name, "writer_class" : review_plus_class, "title" : review_title, "content" : review_content}, status =200)
+    else: return HttpResponse(status=400)
+
+def plus_review_count(request):
+    if request.method == 'GET':
+        count = Plus_review.objects.all().count()
+        return JsonResponse({"count" : count}, status=200)
+    else: return HttpResponse(status=400)
+
+def plz_review_count(request):
+    if request.method == 'GET':
+        count = Plz_review.objects.all().count()
+        return JsonResponse({"count" : count}, status=200)
     else: return HttpResponse(status=400)
 
 @csrf_exempt
@@ -110,37 +122,62 @@ def review_post(request):              #plus를 리뷰하는 함수(plz가 작�
         user_id = tokenCheck(request)
         print(datetime.strptime(str(datetime.now().date()), '%Y-%m-%d'))
         if Plz.objects.filter(plz_id = user_id).exists():   #plz가 작성한다면
-            Plus_review.objects.create(
-                plus_user = Plus.objects.filter(plus_id = data['matching'])[0],
-                plz_user = Plz.objects.filter(plz_id = user_id)[0],
-                date = datetime.today().strftime('%Y-%m-%d'),
-                title = data['title'],
-                content = data['content'],
-                plus_name = Plus.objects.filter(plus_id = data['matching'])[0].plus_name,
-                plz_name = Plz.objects.filter(plz_id = user_id)[0].plz_name,
-                plus_point = data['rating'],
-                plus_class = Hire_board.objects.filter(plz_user = user_id)[0].plz_class,
-            )
-            sum = 0
-            p_review = Plus_review.objects.filter(plus_user=data['matching'])
-            p_user = Plus.objects.filter(plus_id=data['matching'])[0]
-            for i in range(p_review.count()):
-                sum = sum + p_review[i].plus_point
-            point = sum / p_review.count()
-            p_user.plus_point = round(point, 1)
-            p_user.save()
-            return HttpResponse(status=200)
+            if Match.objects.filter(plz_user_id=user_id).filter(complete=True).filter(plus_user_id=data['matchingEmail']).exists():
+                if Plus_review.objects.filter(match_id=data['matching']).exists():
+                    return JsonResponse({"hasuser" : True, "isoverap" : True}, status=200)
+                else:
+                    Plus_review.objects.create(
+                        plus_user = Plus.objects.filter(plus_id = data['matchingEmail'])[0],
+                        plz_user = Plz.objects.filter(plz_id = user_id)[0],
+                        date = datetime.today().strftime('%Y-%m-%d'),
+                        title = data['title'],
+                        content = data['content'],
+                        plus_name = Plus.objects.filter(plus_id = data['matchingEmail'])[0].plus_name,
+                        plz_name = Plz.objects.filter(plz_id = user_id)[0].plz_name,
+                        plus_point = data['rating'],
+                        plus_class = Hire_board.objects.filter(plz_user = user_id)[0].plz_class,
+                        match_id = data['matching'],
+                    )
+                    sum = 0
+                    p_review = Plus_review.objects.filter(plus_user=data['matchingEmail'])
+                    p_user = Plus.objects.filter(plus_id=data['matchingEmail'])[0]
+                    p_user2 = Choice_board.objects.filter(plus_user=data['matchingEmail'])[0]
+                    z_u = Plz_apply.objects.filter(plus_user=data['matchingEmail'])
+                    s_u = Plus_apply.objects.filter(plus_user=data['matchingEmail'])
+                    for i in range(p_review.count()):
+                        sum = sum + p_review[i].plus_point
+                    point = sum / p_review.count()
+                    for i in range(z_u.count()):
+                        z_user = Plz_apply.objects.filter(plus_user=data['matchingEmail'])[i]
+                        z_user.plus_point=round(point, 1)
+                        z_user.save()
+                    for j in range(s_u.count()):
+                        s_user = Plus_apply.objects.filter(plus_user=data['matchingEmail'])[i]
+                        s_user.plus_point=round(point, 1)
+                        s_user.save()
+                    p_user.plus_point = round(point, 1)
+                    p_user2.plus_point = round(point, 1)
+                    p_user.save()
+                    p_user2.save()
+                    return JsonResponse({"hasuser" : True, "isoverap" : False}, status=200)
+            else: return JsonResponse({"hasuser" : False}, status=200)
         elif Plus.objects.filter(plus_id = user_id).exists():   #plz가 작성한다면
-            Plz_review.objects.create(
-                plus_user = Plus.objects.filter(plus_id = user_id)[0],
-                plz_user = Plz.objects.filter(plz_id = data['matching'])[0],
-                date = datetime.today().strftime('%Y-%m-%d'),
-                title = data[title],
-                content = data[content],
-                plus_name = Plus.objects.filter(plus_id = user_id)[0].plus_name,
-                plz_name = Plz.objects.filter(plz_id = data['matching'])[0].plz_name,
-                plz_class = Plz.objects.filter(plz_id = data['matching'])[0].plz_class,
-                )
-            return HttpResponse(status=0)
+            if Match.objects.filter(complete=True).filter(plz_user=data['matchingEmail']).exists():
+                if Plz_review.objects.filter(match_id=data['matching']).exists():
+                    return JsonResponse({"hasuser" : True, "isoverap" : True}, status=200)
+                else:
+                    Plz_review.objects.create(
+                        plus_user = Plus.objects.filter(plus_id = user_id)[0],
+                        plz_user = Plz.objects.filter(plz_id = data['matchingEmail'])[0],
+                        date = datetime.today().strftime('%Y-%m-%d'),
+                        title = data['title'],
+                        content = data['content'],
+                        plus_name = Plus.objects.filter(plus_id = user_id)[0].plus_name,
+                        plz_name = Plz.objects.filter(plz_id = data['matchingEmail'])[0].plz_name,
+                        plz_class = Plz.objects.filter(plz_id = data['matchingEmail'])[0].plz_class,
+                        match_id = data['matching'],
+                        )
+                    return JsonResponse({"hasuser" : True, "isoverap" : False}, status=200)
+            else: return JsonResponse({"hasuser" : False}, status=200)
         else: return HttpResponse(status=400)
     else: return HttpResponse(status=400)

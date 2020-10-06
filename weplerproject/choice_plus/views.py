@@ -33,7 +33,7 @@ def plus_profile_list(reuqest, address):
 
 def plus_profile_list_count(request, address):
     if request.method == 'GET':
-        count = Choice_board.objects.filter(plus_address_big=address)
+        count = Choice_board.objects.filter(plus_address_big=address).count()
         return JsonResponse({"count" : count }, status=200)
     else: return HttpResponse(status=400)
 
@@ -47,27 +47,35 @@ def plus_profile_detail(request, choice_id):
         end = choice.plus_end_time
         name = choice.plus_name
         email = choice.plus_user_id
-        edu = choice.plus_edu
-        return JsonResponse({"plus_fields" : fields, "plus_start_day" : day, "plus_continu_month" : cont, "plus_start_time" : start, "plus_end_time" : end, "plus_name" : name, "plus_id" : email, "plus_edu" : edu}, status=200)
+        point = choice.plus_point
+        info = choice.plus_info
+        if choice.plus_edu == 0: edu = 'X'
+        else : edu = 'O'
+        return JsonResponse({"plus_point" : point, "plus_info" : info, "plus_fields" : fields, "plus_start_day" : day, "plus_continu_month" : cont, "plus_start_time" : start, "plus_end_time" : end, "plus_name" : name, "plus_id" : email, "plus_edu" : edu}, status=200)
     else: return HttpResponse(status=400)
 
+@csrf_exempt
 def apply(request, choice_id):
     if request.method == 'POST':
         user_id = tokenCheck(request)
         choice = Choice_board.objects.filter(id=choice_id)[0]
         plus = Plus.objects.filter(plus_id=choice.plus_user_id)
         plz = Plz.objects.filter(plz_id=user_id)
-        if Plz_apply.objects.filter(id=choice_id).filter(plz_user=plz.plz_user_name).exists():
+        if Plz_apply.objects.filter(choice_id=choice_id).filter(plz_user_id=plz[0].plz_id).exists(): #여기서 choice_id로 바꿔서 해결해야함
             return JsonResponse({"isoverap" : True}, status=200)
         else:
             Plz_apply.objects.create(
-                plus_user = plus,
-                plz_user = plz,
+                plus_user = plus[0],
+                plz_user = plz[0],
                 plus_class = plus[0].plus_class,
                 plz_class = plz[0].plz_class,
-                plus_user_name = plus[0].plus_name,
                 plz_user_name = plz[0].plz_name,
+                plus_user_name = plus[0].plus_name,
+                plus_address = plus[0].plus_address_big,
+                plz_address = plz[0].plz_address_big,
                 plus_date = plus[0].plus_date,
+                choice_id=Choice_board.objects.filter(id=choice_id)[0],
+                plus_point=plus[0].plus_point,
             )
             return JsonResponse({"isoverap" : False}, status=200)
     else: return HttpResponse(status=400)
