@@ -90,3 +90,28 @@
         - 플러스 회원 리스트 보기/plzactivitying    
         - 플러스 회원 자세히 보기/plzactivitying/:profileId    
     >   > 활동완료/plzactivitydone    
+
+<br>
+
+---------
+
+## 이미지
+
+- 메인
+![메인1](./img/home_1.png)
+![메인1](./img/home_2.png)
+
+- 로그인
+![메인1](./img/login.png)
+
+- 서비스 선택
+![메인1](./img/select_1.png)
+![메인1](./img/select_2.png)
+
+- 신청 게시판
+![메인1](./img/board.png)
+
+- 신청 현황
+![메인1](./img/choice_1.png)
+![메인1](./img/choice_2.png)
+
